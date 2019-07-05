@@ -145,6 +145,6 @@ if __name__ == "__main__":
     ave_weird = np.average([weird_blue, weird_red, weird_green], axis=0)
 
     cv.imshow('ave_weird', ave_weird)
-    if not cv.imwrite(path + 'ave.png', ave_weird):
-        print("couldn't save")
+    # if not cv.imwrite(path + 'ave.png', ave_weird):
+    #     print("couldn't save")
     cv.waitKey(0)
