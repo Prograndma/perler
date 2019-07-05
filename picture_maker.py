@@ -64,7 +64,7 @@ def update_pixel_count(image, row, column, count):
 
 
 def slash(num_shades, image):
-    if num_shades < 1:
+    if num_shades > 1:
         divisor = 255 / num_shades - 1
         result = np.uint8(image / divisor)
         result = np.uint8(result * divisor)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     image_original = imutils.resize(image_original, width=size, height=size)
     perler = pixel_scatter(image_original)
-
+    perler = slash(6, perler)
     cv.imshow('pixels', perler)
     cv.imshow('original', image_original)
 
