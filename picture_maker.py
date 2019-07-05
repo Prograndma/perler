@@ -12,13 +12,13 @@ def update_pixel_count(image, row, column, count):
     average = np.average([image_not[row][column], image_one[row][column], image_two[row][column]])
     column += 1
     if column == size:
-        column -= size
+        column = 0
         count += 1
-        if count == 9:
-            count -= 9
+        if count == 3:
+            count = 0
             row += 1
             if row == size:
-                row -= size
+                row = 0
     return pix, row, column, count, average
 
 
@@ -52,47 +52,49 @@ if __name__ == "__main__":
     one_column = 0
     two_row = 0
     two_column = 0
-    count = 0
+    naught_count = 0
+    one_count = 0
+    two_count = 0
     average = 0
     for i, row in enumerate(perler):
         for j, pixel in enumerate(row):
             if i % 3 == 0:
                 if to_use == 'not':
-                    naught, not_row, not_column, count, average = update_pixel_count(image_not, not_row, not_column, count)
+                    naught, not_row, not_column, naught_count, average = update_pixel_count(image_not, not_row, not_column, naught_count)
                     pixel += np.asarray([naught, 0, 0], dtype=np.uint8)
                     to_use = 'one'
                 elif to_use == 'one':
-                    one, one_row, one_column, count, average = update_pixel_count(image_one, one_row, one_column, count)
+                    one, one_row, one_column, one_count, average = update_pixel_count(image_one, one_row, one_column, one_count)
                     pixel += np.asarray([0, one, 0], dtype=np.uint8)
                     to_use = 'two'
                 else:
-                    two, two_row, two_column, count, average = update_pixel_count(image_two, two_row, two_column, count)
+                    two, two_row, two_column, two_count, average = update_pixel_count(image_two, two_row, two_column, two_count)
                     pixel += np.asarray([0, 0, two], dtype=np.uint8)
                     to_use = 'not'
             elif i % 3 == 1:
                 if to_use == 'not':
-                    two, two_row, two_column, count, average = update_pixel_count(image_two, two_row, two_column, count)
+                    two, two_row, two_column, two_count, average = update_pixel_count(image_two, two_row, two_column, two_count)
                     pixel += np.asarray([0, 0, two], dtype=np.uint8)
                     to_use = 'one'
                 elif to_use == 'one':
-                    naught, not_row, not_column, count, average = update_pixel_count(image_not, not_row, not_column, count)
+                    naught, not_row, not_column, naught_count, average = update_pixel_count(image_not, not_row, not_column, naught_count)
                     pixel += np.asarray([naught, 0, 0], dtype=np.uint8)
                     to_use = 'two'
                 else:
-                    one, one_row, one_column, count, average = update_pixel_count(image_one, one_row, one_column, count)
+                    one, one_row, one_column, one_count, average = update_pixel_count(image_one, one_row, one_column, one_count)
                     pixel += np.asarray([0, one, 0], dtype=np.uint8)
                     to_use = 'not'
             else:
                 if to_use == 'not':
-                    one, one_row, one_column, count, average = update_pixel_count(image_one, one_row, one_column, count)
+                    one, one_row, one_column, one_count, average = update_pixel_count(image_one, one_row, one_column, one_count)
                     pixel += np.asarray([0, one, 0], dtype=np.uint8)
                     to_use = 'one'
                 elif to_use == 'one':
-                    two, two_row, two_column, count, average = update_pixel_count(image_two, two_row, two_column, count)
+                    two, two_row, two_column, two_count, average = update_pixel_count(image_two, two_row, two_column, two_count)
                     pixel += np.asarray([0, 0, two], dtype=np.uint8)
                     to_use = 'two'
                 else:
-                    naught, not_row, not_column, count, average = update_pixel_count(image_not, not_row, not_column, count)
+                    naught, not_row, not_column, naught_count, average = update_pixel_count(image_not, not_row, not_column, naught_count)
                     pixel += np.asarray([naught, 0, 0], dtype=np.uint8)
                     to_use = 'not'
 
