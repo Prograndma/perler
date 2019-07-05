@@ -1,9 +1,52 @@
 import cv2 as cv
 import numpy as np
 import imutils
+import hitherdither
+from PIL import Image
+import os
+from hitherdither.palette import Palette
+import time
 
 
 size = 250
+
+
+def create_color_sample(blue_val, green_val, red_val):
+    return np.asarray([[[blue_val, green_val, red_val] for pixel in range(size)] for column in range(size)],
+                      dtype=np.uint8)
+
+
+def create_palette_from_pictures(base_path):
+    image_paths = []
+    for (rootDir, dirNames, filenames) in os.walk(base_path):
+        # loop over the filenames in the current directory
+        for filename in filenames:
+            image_paths.append(os.path.join(rootDir, filename))
+
+    colors = []
+
+    for i, image_name in enumerate(image_paths):
+        image = cv.imread(image_name)
+        if image is not None:
+            # cv.imshow('orig', image)
+            blue, green, red = split_image_into_bgr_grayscale(image)
+            blue = np.average(blue)
+            green = np.average(green)
+            red = np.average(red)
+            # colors.append((blue, green, red))
+            colors.append((np.uint8(red), np.uint8(green), np.uint8(blue)))                           # RGB
+            # cv.imshow('sample', create_color_sample(blue, green, red))
+        else:
+            print("problem with: ")
+            print(image_name)
+            print("sorry")
+
+    return Palette(colors)
+
+
+def from_cv_to_pil(image):
+    img = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+    return Image.fromarray(img)
 
 
 def split_image_into_bgr_grayscale(image):
@@ -138,10 +181,41 @@ def pixel_scatter(image, destination=None):
     return destination
 
 
+def dither_image(image, palette):       # This... works? It takes about ten minutes on a 250X250 image. wow.
+    print("creating a pil from cv")
+    pil_image = from_cv_to_pil(image)
+    print("image created")
+    start = time.time()
+    print("Trying to dither the image. This might fail?")
+    dither = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(pil_image, palette, order=8)
+    print("time elapsed dithering image: " + str(time.time() - start))
+    print("dither created")
+    print("attempting to show for reals now.")
+
+    return dither
+
+
+def bayer_dither(image, palette):               # quicker, can't choose palette, as far as I can tell .
+    print("creating a pil from cv")
+    pil_image = from_cv_to_pil(image)
+    print("image created")
+    start = time.time()
+    print("Trying to dither the image. This might fail?")
+
+    dithered = hitherdither.ordered.bayer.bayer_dithering(pil_image, palette, [256 / 4, 256 / 4, 256 / 4], order=8)
+    print("time elapsed dithering image: " + str(time.time() - start))
+    print("dither created")
+    print("attempting to show for reals now.")
+    return dithered
+
+
 if __name__ == "__main__":
     path = 'C:\\Users\\Thomas\\Pictures\\Saved Pictures\\thomas_cropped.jpg'
+    palette_path = 'C:\\Users\\Thomas\\Pictures\\perler_bead_samples'
     save_path = 'C:\\Users\\Thomas\\Pictures\\Saved Pictures\\'
-    image_original = cv.imread(path)                                                 # BGR
+    image_original = cv.imread(path)
+    palette_main = create_palette_from_pictures(palette_path)
+
     if image_original is None:
         print("Could not load image from path:")
         print(path)
@@ -149,11 +223,15 @@ if __name__ == "__main__":
 
     image_original = imutils.resize(image_original, width=size, height=size)
     perler = pixel_scatter(image_original)
-    perler = slash(6, perler)
     cv.imshow('pixels', perler)
     cv.imshow('original', image_original)
 
     cv.waitKey(0)
+
+    print("calling dither function, expect it to take up to ten minutes. ")
+    dither_image(image_original, palette_main)
+    print("hopefully just showed image")
+    cv.waitKey()
 
 
 # ave_weird = np.average([weird_blue, weird_red, weird_green], axis=0)
